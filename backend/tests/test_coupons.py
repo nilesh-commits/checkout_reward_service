@@ -41,16 +41,13 @@ async def test_coupon_redeemed_by_only_one_of_two_concurrent_checkouts(
         checkout(client, c2, coupon_code=code),
     )
 
-    codes = sorted(
-        r.status_code if r.status_code == 200 else r.json()["error"]["code"]
-        for r in (r1, r2)
-    )
-    # Exactly one wins the coupon; the other's checkout fails cleanly.
-    assert 200 in [r1.status_code, r2.status_code]
-    assert "COUPON_INVALID_OR_REDEEMED" in codes
+    # Exactly one wins the coupon (200); the other's checkout fails cleanly (409).
+    assert sorted([r1.status_code, r2.status_code]) == [200, 409]
 
     winner = r1 if r1.status_code == 200 else r2
+    loser = r2 if r1.status_code == 200 else r1
     assert winner.json()["discount_cents"] == 1000  # 10% of 10000
+    assert loser.json()["error"]["code"] == "COUPON_INVALID_OR_REDEEMED"
 
     assert await _coupon_status(session, code) == "redeemed"
 

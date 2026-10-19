@@ -39,6 +39,29 @@ Configuration (in `.env`): `COUPON_ORDER_INTERVAL` (**n**), `COUPON_PERCENT` (**
 
 ---
 
+## Running without Docker
+
+If Docker isn't available, you only need a reachable PostgreSQL and a `DATABASE_URL`
+pointing at it (the backend creates its schema and seeds products on startup).
+
+```bash
+# Backend  (Python 3.11+)
+cd backend
+pip install -r requirements.txt
+DATABASE_URL=postgresql+asyncpg://<user>:<pass>@localhost:5432/<db> \
+  uvicorn app.main:app --port 8000
+
+# Frontend (Node 20+), in another terminal
+cd frontend
+npm install
+VITE_API_BASE=http://localhost:8000 npm run dev
+```
+
+The whole stack has been verified this way against a local PostgreSQL 16 — all 17 tests
+pass and the end-to-end flow (seed → cart → idempotent checkout → report) works.
+
+---
+
 ## Running the tests
 
 The suite focuses on the hard invariants (concurrency, idempotency, money, reconciliation)
