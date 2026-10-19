@@ -1,0 +1,42 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-uniblox}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-uniblox}
+      POSTGRES_DB: ${POSTGRES_DB:-uniblox}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-uniblox}"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  backend:
+    build: ./backend
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql+asyncpg://uniblox:uniblox@db:5432/uniblox}
+      COUPON_ORDER_INTERVAL: ${COUPON_ORDER_INTERVAL:-5}
+      COUPON_PERCENT: ${COUPON_PERCENT:-10}
+      ADMIN_TOKEN: ${ADMIN_TOKEN:-dev-admin-token}
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    build: ./frontend
+    environment:
+      # Browser-side base URL for the API (defaults to the published backend port).
+      VITE_API_BASE: ${VITE_API_BASE:-http://localhost:8000}
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+
+volumes:
+  pgdata:
