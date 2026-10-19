@@ -8,6 +8,7 @@ and an admin report that reconciles with the data.
 - **Database:** PostgreSQL
 - **Frontend:** React (Vite) — a small demo UI for the full flow
 - **Design rationale & trade-offs:** see [`DECISIONS.md`](./DECISIONS.md)
+- **Test & verification report (browser + automated):** see [`TEST_REPORT.md`](./TEST_REPORT.md)
 - **Original assignment brief:** [`ASSIGNMENT.md`](./ASSIGNMENT.md)
 
 Approximate time spent: ~5 hours.
